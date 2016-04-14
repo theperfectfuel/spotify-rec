@@ -30,6 +30,7 @@ app.get('/search/:name', function(req, res) {
     searchReq.on('end', function(item) {
         var artist = item.artists.items[0];
         res.json(artist);
+        console.log('end function', artist.id);
     });
 
     searchReq.on('error', function(code) {
