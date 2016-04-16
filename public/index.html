@@ -105,9 +105,11 @@ Spotify.prototype.search = function(name) {
         type: 'GET',
         dataType: 'json'
     });
+    console.log('fired search method');
     ajax.done(this.onSearchDone.bind(this));
 };
 Spotify.prototype.onSearchDone = function(artist) {
+    console.log('artist is: ', artist);
     var result = $(this.artistTemplate(artist));
     this.result.empty().append(result);
     this.result.toggleClass('transparent');

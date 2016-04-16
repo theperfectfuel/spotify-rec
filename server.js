@@ -29,8 +29,19 @@ app.get('/search/:name', function(req, res) {
 
     searchReq.on('end', function(item) {
         var artist = item.artists.items[0];
-        res.json(artist);
-        console.log('end function', artist.id);
+
+        unirest.get('https://api.spotify.com/v1/artists/' + artist.id + '/related-artists')
+           .end(function(response) {
+                if (response.ok) {
+                    artist.related = response.body.artists;
+                    console.log(artist.related);
+                    res.json(artist);
+                }
+                else {
+                    console.log('error', response.code);
+                }
+            });
+        
     });
 
     searchReq.on('error', function(code) {
