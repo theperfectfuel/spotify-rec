@@ -21,26 +21,32 @@ var app = express();
 app.use(express.static('public'));
 
 app.get('/search/:name', function(req, res) {
+
+    // First get the artist object from the user's name search
+    // by calling getFromApi()
     var searchReq = getFromApi('search', {
         q: req.params.name,
         limit: 1,
         type: 'artist'
     });
 
+    // Once the initial artist request has completed, or 'ended', 
+    //we can get the ID and look up the related artists
     searchReq.on('end', function(item) {
+        // Get artist object
         var artist = item.artists.items[0];
 
-        unirest.get('https://api.spotify.com/v1/artists/' + artist.id + '/related-artists')
-           .end(function(response) {
-                if (response.ok) {
-                    artist.related = response.body.artists;
-                    console.log(artist.related);
-                    res.json(artist);
-                }
-                else {
-                    console.log('error', response.code);
-                }
-            });
+
+        // Get related artists from related artists endpoint
+        var relatedReq = getFromApi('artists/' + artist.id + '/related-artists');
+
+        relatedReq.on('end', function(list) {
+            artist.related = list.artists;
+
+
+
+            res.json(artist);
+        });
         
     });
 
