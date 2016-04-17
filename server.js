@@ -42,10 +42,35 @@ app.get('/search/:name', function(req, res) {
 
         relatedReq.on('end', function(list) {
             artist.related = list.artists;
+            var numArtists = artist.related.length;
+            var artistsChecked = 0;
 
+            var checkDone = function() {
+                if (artistsChecked === numArtists) {
+                    res.json(artist);
+                }
+            };
 
+            // Loop through related artists to get top track list
+            artist.related.forEach(function(relatedArtist) {
 
-            res.json(artist);
+                // Call getFromApi() again to get top track list for each related artist
+                var trackReq = getFromApi('artists/' + relatedArtist.id + '/top-tracks', {country: 'US'});
+
+                trackReq.on('end', function(trackList) {
+                    relatedArtist.tracks = trackList.tracks;
+                    artistsChecked++;
+                    checkDone();
+                });
+                trackReq.on('error', function(code) {
+                    res.sendStatus(code);
+                });
+
+            });
+
+        });
+        relatedReq.on('error', function(code) {
+            res.sendStatus(code);
         });
         
     });
